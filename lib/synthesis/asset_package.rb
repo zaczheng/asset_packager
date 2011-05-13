@@ -8,7 +8,8 @@ module Synthesis
     # singleton methods
     class << self
       attr_accessor :asset_base_path,
-                    :asset_packages_yml
+                    :asset_packages_yml,
+                    :google_closure_enabled
 
       attr_writer   :merge_environments
 
@@ -165,12 +166,12 @@ module Synthesis
         end
       end
 
-      def compress_js(source, minifier = 'google_closure')
-        case minifier
-          when 'google_closure' then result = compress_google_closure(source)
-        else result = compress_js_min(source)
+      def compress_js(source)
+        if self.class.google_closure_enabled
+          compress_google_closure(source)
+        else
+          compress_js_min(source)
         end
-        result
       end
 
       def compress_js_min(source)
