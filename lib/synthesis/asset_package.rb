@@ -191,14 +191,14 @@ module Synthesis
           'output_info' => 'compiled_code'
         })
         res = Net::HTTP.new(url.host, url.port).start {|http| http.request(req) }
-        case res
-        when Net::HTTPSuccess, Net::HTTPRedirection
-          result = res.body
-        else
-          log("Error compiling js with Google's Closure Compiler. Falling back on js_min...")
-          result = compress_js_jsmin(source)
+        begin
+          raise "#{response.code} #{response.message}" unless res.is_a? Net::HTTPSuccess
+          raise res.body if res.body =~ /^Error\(\d+\):/
+          res.body
+        rescue Exception => e
+          log("Error compiling js with Google's Closure Compiler (#{e.message.strip.inspect}). Falling back on js_min...")
+          compress_js_min(source)
         end
-        result
       end
 
       def compress_css(source)
